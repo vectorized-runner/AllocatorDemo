@@ -2,17 +2,20 @@ using Unity.Collections;
 
 namespace AllocatorDemo
 {
-	public class CustomAllocatorStruct
+	public struct CustomAllocatorStruct
 	{
 		public AllocatorHelper<CustomAllocator> Helper;
 
 		public ref CustomAllocator RefAllocator => ref Helper.Allocator;
 
-		public CustomAllocatorStruct()
+		// For ease-of-use
+		public static implicit operator Allocator(CustomAllocatorStruct str) => str.RefAllocator.ToAllocator;
+
+		public CustomAllocatorStruct(int dummy)
 		{
 			Helper = new AllocatorHelper<CustomAllocator>(Allocator.Persistent);
 		}
-		
+
 		public void Dispose()
 		{
 			RefAllocator.Dispose();
