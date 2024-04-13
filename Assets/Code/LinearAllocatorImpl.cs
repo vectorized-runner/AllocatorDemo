@@ -2,6 +2,7 @@ using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
 using static Unity.Collections.AllocatorManager;
 
 namespace AllocatorDemo
@@ -46,6 +47,8 @@ namespace AllocatorDemo
 			// Allocate
 			if (block.Range.Pointer == IntPtr.Zero)
 			{
+				// Debug.Log($"Requested {block.Bytes}");
+				
 				if (_allocated + block.Bytes > _length)
 				{
 					return -1;

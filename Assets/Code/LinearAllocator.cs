@@ -3,7 +3,7 @@ using Unity.Collections;
 
 namespace AllocatorDemo
 {
-	public struct LinearAllocator
+	public struct LinearAllocator : IDisposable
 	{
 		private AllocatorHelper<LinearAllocatorImpl> _helper;
 		
@@ -19,6 +19,12 @@ namespace AllocatorDemo
 			// Temp backing Allocator as LinearAllocator lives in stack anyway
 			_helper = new AllocatorHelper<LinearAllocatorImpl>(Allocator.Temp);
 			_helper.Allocator.Init(memory);
+		}
+
+		public void Dispose()
+		{
+			_helper.Allocator.Dispose();
+			_helper.Dispose();
 		}
 	}
 }
