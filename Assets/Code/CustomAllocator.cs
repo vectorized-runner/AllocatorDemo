@@ -33,6 +33,7 @@ namespace AllocatorDemo
 
 		public TryFunction Function => AllocatorFunction;
 
+		[BurstCompile]
 		private static int AllocatorFunction(IntPtr allocatorState, ref Block block)
 		{
 			return ((CustomAllocator*)allocatorState)->Try(ref block);
