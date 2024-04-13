@@ -5,8 +5,19 @@ using static Unity.Collections.AllocatorManager;
 
 namespace AllocatorDemo
 {
+	/// <summary>
+	/// Block: Range + BytesPerItem + AllocatedItems + Alignment + Padding
+	/// BytesPerItem: This is the sizeof the struct used for allocation?
+	/// AllocatedItems: The items this Block has allocated
+	/// (if Range.Items == AllocatedItems, then Block allocation is successful, otherwise allocation request isn't completed yet)
+	/// Bytes: BytesPerItem * Range.Items. Total user-requested bytes
+	/// Range: Ptr + Items + AllocatorHandle
+	///	Ptr: Pointer to the allocated heap memory
+	/// Items: Number of items allocated in the range
+	/// AllocatorHandle: Allocator Function used to create the Range (self-referencing)
+	/// </summary>
 	[BurstCompile]
-	public struct CustomAllocator : IAllocator
+	public unsafe struct CustomAllocator : IAllocator
 	{
 		private AllocatorHandle _handle;
 
@@ -22,15 +33,13 @@ namespace AllocatorDemo
 
 		public TryFunction Function => AllocatorFunction;
 
-		private int AllocatorFunction(IntPtr allocatorState, ref Block block)
+		private static int AllocatorFunction(IntPtr allocatorState, ref Block block)
 		{
-			return -1;
+			return ((CustomAllocator*)allocatorState)->Try(ref block);
 		}
 
 		public void Dispose()
 		{
-			// TODO: Ensure no memory leaks?
-			
 			_handle.Dispose();
 		}
 
