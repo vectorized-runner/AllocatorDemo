@@ -17,7 +17,7 @@ namespace AllocatorDemo
 	/// AllocatorHandle: Allocator Function used to create the Range (self-referencing)
 	/// </summary>
 	[BurstCompile]
-	public unsafe struct CustomAllocator : IAllocator
+	public unsafe struct PersistentAllocatorImpl : IAllocator
 	{
 		private AllocatorHandle _handle;
 
@@ -26,7 +26,7 @@ namespace AllocatorDemo
 			get => _handle;
 			set => _handle = value;
 		}
-		
+
 		public bool IsCustomAllocator => _handle.IsCustomAllocator;
 		public Allocator ToAllocator => _handle.ToAllocator;
 		public bool IsAutoDispose => false;
@@ -36,7 +36,7 @@ namespace AllocatorDemo
 		[BurstCompile]
 		private static int AllocatorFunction(IntPtr allocatorState, ref Block block)
 		{
-			return ((CustomAllocator*)allocatorState)->Try(ref block);
+			return ((PersistentAllocatorImpl*)allocatorState)->Try(ref block);
 		}
 
 		public void Dispose()
@@ -44,14 +44,11 @@ namespace AllocatorDemo
 			_handle.Dispose();
 		}
 
-		// Could be used?
-		private int _allocationCount;
-
 		// This method allocates or deallocates (why are they together?)
 		public int Try(ref Block block)
 		{
 			int error = 0;
-			
+
 			// If Pointer is zero, need to Allocate
 			if (block.Range.Pointer == IntPtr.Zero)
 			{
@@ -66,10 +63,9 @@ namespace AllocatorDemo
 
 				if (block.Range.Pointer != IntPtr.Zero)
 				{
-					_allocationCount++;
+					// Valid allocation, do whatever you want
 				}
 
-				// Successful
 				return 0;
 			}
 			// Deallocate
@@ -85,7 +81,7 @@ namespace AllocatorDemo
 
 				if (block.Range.Pointer == IntPtr.Zero)
 				{
-					_allocationCount--;
+					// Valid de-allocation, do whatever you want
 				}
 
 				return 0;
