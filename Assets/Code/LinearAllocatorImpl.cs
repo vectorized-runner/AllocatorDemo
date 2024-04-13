@@ -1,6 +1,7 @@
 using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using static Unity.Collections.AllocatorManager;
 
 namespace AllocatorDemo
@@ -18,20 +19,45 @@ namespace AllocatorDemo
 		public bool IsAutoDispose => true;
 		public TryFunction Function => AllocatorFunction;
 
+		private void* _ptr;
+		private int _length;
+		private int _allocated;
+		
 		public AllocatorHandle Handle
 		{
 			get => _handle;
 			set => _handle = value;
 		}
+		
+		public void Init(Span<byte> memory)
+		{
+			_ptr = UnsafeUtility.AddressOf(ref memory[0]);
+			_length = memory.Length;
+			_allocated = 0;
+		}
 
 		public void Dispose()
 		{
-			// No-op
+			_handle.Dispose();
 		}
 
 		public int Try(ref Block block)
 		{
-			// TODO:
+			// Allocate
+			if (block.Range.Pointer == IntPtr.Zero)
+			{
+				if (_allocated + block.Bytes > _length)
+				{
+					return -1;
+				}
+
+				block.Range.Pointer = (IntPtr)((byte*)_ptr + _allocated);
+				block.AllocatedItems = block.Range.Items;
+				_allocated += (int)block.Bytes;
+				return 0;
+			}
+
+			// Deallocate or Reallocate not supported
 			return -1;
 		}
 
