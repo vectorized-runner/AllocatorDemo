@@ -29,6 +29,8 @@ namespace AllocatorDemo
 
 		public void Dispose()
 		{
+			// TODO: Ensure no memory leaks?
+			
 			_handle.Dispose();
 		}
 
@@ -60,8 +62,24 @@ namespace AllocatorDemo
 				// Successful
 				return 0;
 			}
-			
-			throw new System.NotImplementedException();
+			// Deallocate
+			else
+			{
+				var originalAllocator = block.Range.Allocator;
+				block.Range.Allocator = Persistent;
+				error = AllocatorManager.Try(ref block);
+				block.Range.Allocator = originalAllocator;
+
+				if (error != 0)
+					return error;
+
+				if (block.Range.Pointer == IntPtr.Zero)
+				{
+					_allocationCount--;
+				}
+
+				return 0;
+			}
 		}
 	}
 }
